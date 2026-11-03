@@ -34,7 +34,10 @@ export default function activate(orca: OrcaWorkerApi): void {
     try {
       return { cwd: dir, items: parseStatus(await svn(dir, ['status'])) }
     } catch (e) {
-      return { cwd: dir, items: [], error: (e as Error).message }
+      const error = (e as Error).message
+      // 155007 = "not a working copy"; also covers localized svn output.
+      if (/155007/.test(error)) return { cwd: dir, items: [], notWc: true }
+      return { cwd: dir, items: [], error }
     }
   })
   // Streams svn's output to the panel line by line so it can show progress.

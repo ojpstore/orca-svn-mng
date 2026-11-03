@@ -7,6 +7,7 @@ const note = atom<{ tone: 'success' | 'danger'; text: string } | null>(null)
 const diff = atom<string | null>(null)
 const busy = atom(false)
 const cwd = atom<string | null>(null)
+const notWc = atom(false)
 /** Lines of the running `svn update`; null when no update is running. */
 const progress = atom<string[] | null>(null)
 
@@ -30,6 +31,7 @@ async function refresh(): Promise<void> {
   const r = await plugin.request('svn.status')
   set(cwd, r.cwd)
   set(items, r.items)
+  set(notWc, !!r.notWc)
   update(picked, (p) => p.filter((x) => r.items.some((i) => i.path === x)))
   if (r.error) set(note, { tone: 'danger', text: r.error })
 }
@@ -49,13 +51,14 @@ export default function Panel() {
   const n = read(note)
   const d = read(diff)
   const b = read(busy)
+  const nw = read(notWc) // not an svn working copy: lock the controls
   return (
     <Stack gap="md">
       <Row justify="between">
         <Text muted size="xs" truncate>{read(cwd) ?? 'no workspace'}</Text>
         <Row gap="xs">
           <Button size="sm" icon="refresh" disabled={b} onPress={() => act(async () => {})}>Refresh</Button>
-          <Button size="sm" icon="download" disabled={b} onPress={() => act(async () => {
+          <Button size="sm" icon="download" disabled={b || nw} onPress={() => act(async () => {
             set(progress, [])
             try {
               return (await plugin.request('svn.update', undefined, { timeoutMs: 120000 })).text
@@ -65,6 +68,7 @@ export default function Panel() {
           })}>Update</Button>
         </Row>
       </Row>
+      {read(notWc) && <Callout tone="warning" title="SVN 관리 폴더가 아닙니다"><Text size="xs">이 폴더는 svn 작업 사본(working copy)이 아닙니다.</Text></Callout>}
       {read(progress) && (
         <Card title="Updating...">
           <Stack gap="xs">
@@ -76,7 +80,7 @@ export default function Panel() {
       {n && (n.tone === 'success'
         ? <Callout tone="success" title="완료" />
         : <Callout tone="danger" title="오류"><Text size="xs">{n.text}</Text></Callout>)}
-      {list.length === 0 ? (
+      {read(notWc) ? null : list.length === 0 ? (
         <EmptyState title="No changes" icon="check" />
       ) : (
         <Stack gap="xs">
@@ -99,10 +103,10 @@ export default function Panel() {
           </Box>
         </Stack>
       )}
-      {d !== null && <CodeView code={d || '(no diff)'} language="diff" maxHeight="md" />}
-      <Input label="Commit message" value={msg} onChange={(v) => set(message, v)} />
+      {!read(notWc) && d !== null && <CodeView code={d || '(no diff)'} language="diff" maxHeight="md" />}
+      <Input label="Commit message" disabled={nw} value={msg} onChange={(v) => set(message, v)} />
       <Button
-        disabled={b || !msg.trim() || sel.length === 0}
+        disabled={b || nw || !msg.trim() || sel.length === 0}
         onPress={() => act(async () => {
           const r = await plugin.request('svn.commit', { message: msg.trim(), paths: sel })
           set(message, '')
