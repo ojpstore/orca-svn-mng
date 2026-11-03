@@ -15,7 +15,7 @@
       {
         "id": "svn-mng",
         "title": "SVN",
-        "icon": "branch",
+        "icon": "database",
         "entry": "src/panel.tsx",
         "ui": "components"
       }
