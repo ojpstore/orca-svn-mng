@@ -1,6 +1,6 @@
 {
   "manifestVersion": 2,
-  "id": "orca-svn-mng",
+  "id": "svn-mng",
   "name": "SVN",
   "version": "0.1.0",
   "description": "SVN status, update and commit for the focused workspace.",
@@ -13,7 +13,7 @@
   "contributes": {
     "panels": [
       {
-        "id": "orca-svn-mng",
+        "id": "svn-mng",
         "title": "SVN",
         "icon": "blocks",
         "entry": "src/panel.tsx",
