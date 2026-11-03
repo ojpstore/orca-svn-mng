@@ -38,6 +38,7 @@ async function refresh(): Promise<void> {
 
 export function setup(ctx: PanelContext): void {
   ctx.subscriptions.push(plugin.on('svn.progress', ({ line }) => update(progress, (p) => (p ? [...p.slice(-7), line] : p))))
+  ctx.subscriptions.push(plugin.on('svn.changed', () => void refresh()))
   void refresh()
 }
 

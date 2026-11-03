@@ -28,6 +28,9 @@ export default function activate(orca: OrcaWorkerApi): void {
     return svn(dir, args)
   }
 
+  // Workspace switched/created/removed: tell open panels to re-read status.
+  for (const ev of ['workspace.changed', 'workspace.created', 'workspace.removed'] as const)
+    orca.events.on(ev, () => orca.panels.post('svn.changed', {}))
   orca.panels.handle('svn.status', async () => {
     const dir = await cwd()
     if (!dir) return { cwd: null, items: [], error: 'No focused workspace' }

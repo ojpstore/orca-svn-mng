@@ -15,5 +15,7 @@ declare module 'orca' {
   interface PluginPanelEvents {
     /** One line of `svn update` output, posted while it runs. */
     'svn.progress': { line: string }
+    /** The focused workspace changed (switched, created or removed): panels should refresh. */
+    'svn.changed': Record<string, never>
   }
 }
