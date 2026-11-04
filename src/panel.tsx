@@ -1,4 +1,4 @@
-import { atom, Box, Button, Callout, Card, CodeView, Spinner, EmptyState, Input, Row, Stack, Text, Checkbox, List, ListItem, Badge, plugin, read, set, update, type PanelContext } from 'orca'
+import { atom, Box, Button, Callout, Card, CodeView, Spinner, EmptyState, Row, Stack, Text, Textarea, Checkbox, List, ListItem, Badge, plugin, read, set, update, type PanelContext } from 'orca'
 
 const items = atom<{ status: string; path: string }[]>([])
 const picked = atom<string[]>([]) // paths to commit
@@ -105,7 +105,7 @@ export default function Panel() {
         </Stack>
       )}
       {!read(notWc) && d !== null && <CodeView code={d || '(no diff)'} language="diff" maxHeight="md" />}
-      <Input label="Commit message" disabled={nw} value={msg} onChange={(v) => set(message, v)} />
+      <Textarea label="Commit message" rows={2} disabled={nw} value={msg} onChange={(v) => set(message, v)} />
       <Button
         disabled={b || nw || !msg.trim() || sel.length === 0}
         onPress={() => act(async () => {

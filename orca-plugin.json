@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "description": "SVN status, update and commit for the focused workspace.",
   "engines": {
-    "orca": ">=1.4.246"
+    "orca": ">=1.4.247"
   },
   "execution": "trusted-worker",
   "pluginApi": 1,

@@ -10,3 +10,11 @@ test('parses svn status lines', () => {
     { status: 'M', path: 'props' }
   ])
 })
+
+test('skips temp files ending in .ext$', () => {
+  const out = '?       nexacro\\biz\\$Form.xfdl$\n?       a$b.xfdl\nM       cost$\n'
+  assert.deepEqual(parseStatus(out), [
+    { status: '?', path: 'a$b.xfdl' },
+    { status: 'M', path: 'cost$' }
+  ])
+})
