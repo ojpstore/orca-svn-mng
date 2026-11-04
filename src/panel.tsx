@@ -3,7 +3,7 @@ import { atom, Box, Button, Callout, Card, CodeView, Spinner, EmptyState, Row, S
 const items = atom<{ status: string; path: string }[]>([])
 const picked = atom<string[]>([]) // paths to commit
 const message = atom('message', '')
-const note = atom<{ tone: 'success' | 'danger'; text: string } | null>(null)
+const note = atom<{ tone: 'success' | 'danger'; text: string; show?: boolean } | null>(null)
 const diff = atom<string | null>(null)
 const busy = atom(false)
 const cwd = atom<string | null>(null)
@@ -12,11 +12,12 @@ const notWc = atom(false)
 const progress = atom<string[] | null>(null)
 
 // Every action funnels through here: busy flag, error -> note, then refresh the list.
-async function act(fn: () => Promise<string | void>): Promise<void> {
+// `show` puts the returned text in the callout instead of the generic "완료".
+async function act(fn: () => Promise<string | void>, show = false): Promise<void> {
   set(busy, true)
   try {
     const text = await fn()
-    const ok = text ? { tone: 'success' as const, text } : null
+    const ok = text ? { tone: 'success' as const, text, show } : null
     set(note, ok)
     // Success fades after 3 s, unless a newer message replaced it meanwhile.
     if (ok) setTimeout(() => read(note) === ok && set(note, null), 3000)
@@ -58,7 +59,11 @@ export default function Panel() {
       <Row justify="between">
         <Text muted size="xs" truncate>{read(cwd) ?? 'no workspace'}</Text>
         <Row gap="xs">
-          <Button size="sm" icon="refresh" disabled={b} onPress={() => act(async () => {})}>Refresh</Button>
+          <Button size="sm" icon="refresh" disabled={b} onPress={() => act(async () => {
+            if (read(notWc)) return
+            const { count } = await plugin.request('svn.incoming', undefined, { timeoutMs: 120000 })
+            return count ? `업데이트 항목 ${count}건이 있습니다` : '업데이트 항목이 없습니다'
+          }, true)}>Refresh</Button>
           <Button size="sm" icon="download" disabled={b || nw} onPress={() => act(async () => {
             set(progress, [])
             try {
@@ -79,7 +84,7 @@ export default function Panel() {
         </Card>
       )}
       {n && (n.tone === 'success'
-        ? <Callout tone="success" title="완료" />
+        ? <Callout tone="success" title={n.show ? n.text : '완료'} />
         : <Callout tone="danger" title="오류"><Text size="xs">{n.text}</Text></Callout>)}
       {read(notWc) ? null : list.length === 0 ? (
         <EmptyState title="No changes" icon="check" />

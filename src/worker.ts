@@ -1,7 +1,7 @@
 // Runs svn in the focused workspace's folder. Panels can't spawn processes, so the worker does.
 import { execFile, spawn } from 'node:child_process'
 import type { OrcaWorkerApi } from 'orca/worker'
-import { parseStatus } from './status'
+import { countIncoming, parseStatus } from './status'
 
 function svn(cwd: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) =>
@@ -43,6 +43,7 @@ export default function activate(orca: OrcaWorkerApi): void {
       return { cwd: dir, items: [], error }
     }
   })
+  orca.panels.handle('svn.incoming', async () => ({ count: countIncoming(await run(['status', '-u', '--non-interactive'])) }))
   // Streams svn's output to the panel line by line so it can show progress.
   orca.panels.handle('svn.update', async () => {
     const dir = await cwd()

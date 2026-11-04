@@ -10,3 +10,8 @@ export function parseStatus(text: string): { status: string; path: string }[] {
     return m && !TEMP.test(l) ? [{ status: l[0] === ' ' ? l[1] : l[0], path: l.slice(8).trim() }] : []
   })
 }
+
+// `svn status -u` marks items newer on the server with `*` in column 8.
+export function countIncoming(text: string): number {
+  return text.split(/\r?\n/).filter((l) => l[8] === '*').length
+}

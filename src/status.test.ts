@@ -1,5 +1,5 @@
 import { assert, test } from 'orca/testing'
-import { parseStatus } from './status'
+import { countIncoming, parseStatus } from './status'
 
 test('parses svn status lines', () => {
   const out = 'M       src/a.c\n?       new file.txt\nA  +    b\n M      props\n\nStatus against revision: 5\n'
@@ -17,4 +17,10 @@ test('skips temp files ending in .ext$', () => {
     { status: '?', path: 'a$b.xfdl' },
     { status: 'M', path: 'cost$' }
   ])
+})
+
+test('counts items newer on the server', () => {
+  const out = '        *     1150   src/a.java\nM       *     1150   b.xml\nM             1150   c.xml\n?                    d\nStatus against revision:   1156\n'
+  assert.equal(countIncoming(out), 2)
+  assert.equal(countIncoming('Status against revision:   1156\n'), 0)
 })

@@ -5,6 +5,8 @@ declare module 'orca' {
   interface PluginRequests {
     /** `svn status` of the focused workspace. */
     'svn.status': { output: { cwd: string | null; items: { status: string; path: string }[]; error?: string; notWc?: boolean } }
+    /** Number of items the server has newer than the working copy (`svn status -u`). */
+    'svn.incoming': { output: { count: number } }
     /** `svn update`; output is svn's own text. */
     'svn.update': { output: { text: string } }
     /** `svn commit -m` for the given paths (relative to the workspace). */
